@@ -6,7 +6,7 @@ public class CompilationCheck {
     }
 
     public static void main(String[] args) {
-        CompilationCheck compCheck = new CompilationCheck();
-        System.out.println(compCheck.onePlusOne());
+        CompilationCheck compile = new CompilationCheck();
+        System.out.println(compile.onePlusOne());
     }
 }
