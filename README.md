@@ -1,6 +1,5 @@
 #Vacancy parser
 
-
 About project
 -------------
 - Parsing runs on a schedule. Once per minute.
