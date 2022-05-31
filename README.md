@@ -1,4 +1,5 @@
 #Vacancy parser
+[![Java CI with Maven](https://github.com/Constantine-M/job4j_grabber/actions/workflows/maven.yml/badge.svg)](https://github.com/Constantine-M/job4j_grabber/actions/workflows/maven.yml)
 
 About project
 -------------
