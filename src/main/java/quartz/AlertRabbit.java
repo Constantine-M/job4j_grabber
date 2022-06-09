@@ -64,11 +64,8 @@ public class AlertRabbit implements AutoCloseable {
      *
      * @return {@link Connection}.
      */
-    public Connection init() {
-        try (InputStream in = AlertRabbit.class.getClassLoader()
-                .getResourceAsStream("rabbit.properties")) {
-            Properties config = new Properties();
-            config.load(in);
+    public Connection init(Properties config) {
+        try {
             Class.forName(config.getProperty("postgre-Parser"));
             return DriverManager.getConnection(
                     config.getProperty("url"),
@@ -115,14 +112,14 @@ public class AlertRabbit implements AutoCloseable {
     }
 
     public static void main(String[] args) {
-        try (AlertRabbit rabbit = new AlertRabbit()) {
-            Connection cn = rabbit.init();
+        Properties config = rabbitConfig();
+        try (AlertRabbit rabbit = new AlertRabbit(); Connection cn = rabbit.init(config)) {
             rabbit.dropTable(cn);
             Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
             scheduler.start();
             JobDataMap data = new JobDataMap();
             data.put("connection", cn);
-            int interval = Integer.parseInt(rabbitConfig().getProperty("rabbit.interval"));
+            int interval = Integer.parseInt(config.getProperty("rabbit.interval"));
             JobDetail job = JobBuilder.newJob(Rabbit.class)
                     .usingJobData(data)
                     .build();
@@ -157,7 +154,8 @@ public class AlertRabbit implements AutoCloseable {
      */
     @Override
     public void close() throws Exception {
-        Connection cn = init();
+        Properties config = rabbitConfig();
+        Connection cn = init(config);
         if (cn != null) {
             cn.close();
         }
