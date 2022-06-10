@@ -7,7 +7,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -79,26 +79,26 @@ public class HabrCareerParse {
             "%s/vacancies/java_developer", SOURCE_LINK);
 
     /**
-     * Данный метод приводит время
-     * с часовым поясом в "нормальный" вид.
+     * Данный метод приводит дату и время
+     * в удобочитаемый формат.
      *
-     * На входе имеем что-то вроде
-     * 2022-06-08T19:34:01+03:00 в виде строки.
-     * Преобразуем это в {@link ZonedDateTime},
-     * а потом избавляемся от часового пояса.
-     * В конце приводим к шаблонному виду.
+     * С помощью {@link DateTimeFormatter}
+     * мы выбираем паттерн (сами),
+     * согласно которому будет отображаться
+     * дата и время.
      *
-     * @param zonedTime время с часовым поясом.
-     * @return преобразованное время
-     * согласно встроенному в метод шаблону.
+     * @param dateTime местное время в формате
+     *                 {@link LocalDateTime}.
+     * @return кастомизированное время, в
+     * виде строки.
      */
-    private static String getCustomDateTime(String zonedTime) {
+    private static String getCustomDateTime(LocalDateTime dateTime) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy hh:mm:ss a");
-        ZonedDateTime zdt = ZonedDateTime.parse(zonedTime);
-        return zdt.toLocalDateTime().format(formatter);
+        return formatter.format(dateTime);
     }
 
     public static void main(String[] args) throws IOException {
+        DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
         Connection connection = Jsoup.connect(PAGE_LINK);
         Document document = connection.get();
         Elements rows = document.select(".vacancy-card__inner");
@@ -108,7 +108,7 @@ public class HabrCareerParse {
             String vacancyName = titleElement.text();
             Element timeElement = row.select("time").first();
             String dateTime = timeElement.attr("datetime");
-            String customTime = getCustomDateTime(dateTime);
+            String customTime = getCustomDateTime(dateTimeParser.parse(dateTime));
             String link = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
             System.out.printf("%s - %s %s%n", customTime, vacancyName, link);
         });
