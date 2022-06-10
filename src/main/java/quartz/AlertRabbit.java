@@ -52,7 +52,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
  *
  * @author Constantine on 04.06.2022
  */
-public class AlertRabbit implements AutoCloseable {
+public class AlertRabbit {
 
     /**
      * Данный метод устанавливает
@@ -64,17 +64,13 @@ public class AlertRabbit implements AutoCloseable {
      *
      * @return {@link Connection}.
      */
-    public Connection init(Properties config) {
-        try {
-            Class.forName(config.getProperty("postgre-Parser"));
-            return DriverManager.getConnection(
-                    config.getProperty("url"),
-                    config.getProperty("username"),
-                    config.getProperty("password")
-            );
-        } catch (Exception e) {
-            throw new IllegalStateException();
-        }
+    public Connection init(Properties config) throws SQLException, ClassNotFoundException {
+        Class.forName(config.getProperty("postgre-Parser"));
+        return DriverManager.getConnection(
+                config.getProperty("url"),
+                config.getProperty("username"),
+                config.getProperty("password")
+        );
     }
 
     /**
@@ -113,7 +109,8 @@ public class AlertRabbit implements AutoCloseable {
 
     public static void main(String[] args) {
         Properties config = rabbitConfig();
-        try (AlertRabbit rabbit = new AlertRabbit(); Connection cn = rabbit.init(config)) {
+        AlertRabbit rabbit = new AlertRabbit();
+        try (Connection cn = rabbit.init(config)) {
             rabbit.dropTable(cn);
             Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
             scheduler.start();
@@ -135,29 +132,6 @@ public class AlertRabbit implements AutoCloseable {
             scheduler.shutdown();
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    /**
-     * Данный метод закрывает
-     * соединение.
-     *
-     * Т.к. наш класс объявлен
-     * {@link AutoCloseable}.
-     * Создаем {@link AlertRabbit}
-     * один раз, используя конструкцию
-     * выше, а внутри производим
-     * все-все-все манипуляции с таблицей.
-     * После этого соединение автоматически
-     * закрывается.
-     * @throws Exception
-     */
-    @Override
-    public void close() throws Exception {
-        Properties config = rabbitConfig();
-        Connection cn = init(config);
-        if (cn != null) {
-            cn.close();
         }
     }
 
