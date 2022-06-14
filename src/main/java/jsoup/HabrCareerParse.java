@@ -98,19 +98,24 @@ public class HabrCareerParse {
     }
 
     public static void main(String[] args) throws IOException {
-        DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
-        Connection connection = Jsoup.connect(PAGE_LINK);
-        Document document = connection.get();
-        Elements rows = document.select(".vacancy-card__inner");
-        rows.forEach(row -> {
-            Element titleElement = row.select(".vacancy-card__title").first();
-            Element linkElement = titleElement.child(0);
-            String vacancyName = titleElement.text();
-            Element timeElement = row.select("time").first();
-            String dateTime = timeElement.attr("datetime");
-            String customTime = getCustomDateTime(dateTimeParser.parse(dateTime));
-            String link = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
-            System.out.printf("%s - %s %s%n", customTime, vacancyName, link);
-        });
+        byte pageNum = 1;
+        while (pageNum <= 5) {
+            System.out.println("Page number - " + pageNum);
+            DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
+            Connection connection = Jsoup.connect(PAGE_LINK.concat("?page=" + pageNum));
+            Document document = connection.get();
+            Elements rows = document.select(".vacancy-card__inner");
+            rows.forEach(row -> {
+                Element titleElement = row.select(".vacancy-card__title").first();
+                Element linkElement = titleElement.child(0);
+                String vacancyName = titleElement.text();
+                Element timeElement = row.select("time").first();
+                String dateTime = timeElement.attr("datetime");
+                String customTime = getCustomDateTime(dateTimeParser.parse(dateTime));
+                String link = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
+                System.out.printf("%s - %s %s%n", customTime, vacancyName, link);
+            });
+            pageNum++;
+        }
     }
 }
