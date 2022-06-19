@@ -99,7 +99,7 @@ public class HabrCareerParse {
 
     public static void main(String[] args) throws IOException {
         byte pageNum = 1;
-        while (pageNum <= 5) {
+        for (int i = 1; i <= 5; i++) {
             System.out.println("Page number - " + pageNum);
             DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
             Connection connection = Jsoup.connect(PAGE_LINK.concat("?page=" + pageNum));
