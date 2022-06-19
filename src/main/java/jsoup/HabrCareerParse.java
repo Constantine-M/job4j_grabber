@@ -69,6 +69,12 @@ import java.time.format.DateTimeFormatter;
  * как аттрибут. Для этого используем
  * метод {@link Element#attr(String)}.
  *
+ * 6.В main мы парсим первые 5 страниц.
+ * Чтобы убедиться, что все вакансии
+ * не с одной страницы, я вывел в консоль
+ * номер страницы. Эта информация
+ * будет своеобразным разделителем.
+ *
  * @author Constantine on 08.06.2022
  */
 public class HabrCareerParse {
@@ -98,8 +104,7 @@ public class HabrCareerParse {
     }
 
     public static void main(String[] args) throws IOException {
-        byte pageNum = 1;
-        for (int i = 1; i <= 5; i++) {
+        for (byte pageNum = 1; pageNum <= 5; pageNum++) {
             System.out.println("Page number - " + pageNum);
             DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
             Connection connection = Jsoup.connect(PAGE_LINK.concat("?page=" + pageNum));
@@ -115,7 +120,6 @@ public class HabrCareerParse {
                 String link = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
                 System.out.printf("%s - %s %s%n", customTime, vacancyName, link);
             });
-            pageNum++;
         }
     }
 }
