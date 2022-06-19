@@ -1,14 +1,20 @@
+package jsoup;
+
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
- * 2.2. Модель данных - Post.
+ * 2.2. Модель данных - jsoup.Post.
  *
  * Данный класс описывает вакансию.
  *
  * @author Constantine on 14.06.2022
  */
 public class Post {
+
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     private int id;
 
@@ -99,12 +105,12 @@ public class Post {
 
     @Override
     public String toString() {
-        return "Post{"
+        return "jsoup.Post{"
                 + "id=" + id
                 + ", title='" + title + '\''
                 + ", link='" + link + '\''
                 + ", description='" + description + '\''
-                + ", created=" + created
+                + ", created=" + FORMATTER.format(created)
                 + '}';
     }
 }

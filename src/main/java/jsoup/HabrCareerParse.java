@@ -9,6 +9,8 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 2. Парсинг HTML страницы.
@@ -98,13 +100,49 @@ public class HabrCareerParse {
      * @return кастомизированное время, в
      * виде строки.
      */
-    private static String getCustomDateTime(LocalDateTime dateTime) {
+    private String getCustomDateTime(LocalDateTime dateTime) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy hh:mm:ss a");
         return formatter.format(dateTime);
     }
 
+    /**
+     * Данный метод парсит детали объявления
+     * (описание вакансии).
+     *
+     * 1.Подключаемся и проваливаемся по
+     * ссылке в вакансию.
+     * 2.Я выяснил, что основной тест
+     * описания содержится в div class="style-ugc".
+     * 3.Выбрали первый элемент в дереве.
+     * 4.Далее в цикле проходимся от первого
+     * элемента в дереве (ветке) до последнего
+     * и парсим текст, который находим.
+     * 5.Весь текст объединяем в одну строку
+     * с помощью {@link StringBuilder}.
+     *
+     * @param link ссылка на вакансию.
+     * @return описание вакансии в одной строке.
+     */
+    private String retrieveDescription(String link) {
+        StringBuilder builder = new StringBuilder();
+        try {
+            Connection connection = Jsoup.connect(link);
+            Document document = connection.get();
+            Element firstElement = document.select(".style-ugc").first();
+            while (firstElement != null) {
+                builder.append(firstElement.text());
+                firstElement = firstElement.nextElementSibling();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return builder.toString();
+    }
+
     public static void main(String[] args) throws IOException {
-        for (byte pageNum = 1; pageNum <= 5; pageNum++) {
+        HabrCareerParse parser = new HabrCareerParse();
+        List<Post> vacancies = new ArrayList<>();
+        for (byte pageNum = 1; pageNum <= 1; pageNum++) {
             System.out.println("Page number - " + pageNum);
             DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
             Connection connection = Jsoup.connect(PAGE_LINK.concat("?page=" + pageNum));
@@ -116,10 +154,18 @@ public class HabrCareerParse {
                 String vacancyName = titleElement.text();
                 Element timeElement = row.select("time").first();
                 String dateTime = timeElement.attr("datetime");
-                String customTime = getCustomDateTime(dateTimeParser.parse(dateTime));
+                LocalDateTime created = dateTimeParser.parse(dateTime);
                 String link = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
-                System.out.printf("%s - %s %s%n", customTime, vacancyName, link);
+                String description = parser.retrieveDescription(link);
+                vacancies.add(new Post(
+                        vacancyName,
+                        link,
+                        description,
+                        created));
             });
+        }
+        for (Post posts : vacancies) {
+            System.out.println(posts);
         }
     }
 }
