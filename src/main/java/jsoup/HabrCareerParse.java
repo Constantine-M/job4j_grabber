@@ -7,8 +7,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,30 +77,17 @@ import java.util.List;
  *
  * @author Constantine on 08.06.2022
  */
-public class HabrCareerParse {
+public class HabrCareerParse implements Parse {
 
     private static final String SOURCE_LINK = "https://career.habr.com";
 
     private static final String PAGE_LINK = String.format(
             "%s/vacancies/java_developer", SOURCE_LINK);
 
-    /**
-     * Данный метод приводит дату и время
-     * в удобочитаемый формат.
-     *
-     * С помощью {@link DateTimeFormatter}
-     * мы выбираем паттерн (сами),
-     * согласно которому будет отображаться
-     * дата и время.
-     *
-     * @param dateTime местное время в формате
-     *                 {@link LocalDateTime}.
-     * @return кастомизированное время, в
-     * виде строки.
-     */
-    private String getCustomDateTime(LocalDateTime dateTime) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy hh:mm:ss a");
-        return formatter.format(dateTime);
+    private final DateTimeParser dateTimeParser;
+
+    public HabrCareerParse(DateTimeParser dateTimeParser) {
+        this.dateTimeParser = dateTimeParser;
     }
 
     /**
@@ -139,12 +124,10 @@ public class HabrCareerParse {
         return builder.toString();
     }
 
-    public static void main(String[] args) throws IOException {
-        HabrCareerParse parser = new HabrCareerParse();
+    @Override
+    public List<Post> list(String link) throws IOException {
         List<Post> vacancies = new ArrayList<>();
-        for (byte pageNum = 1; pageNum <= 1; pageNum++) {
-            System.out.println("Page number - " + pageNum);
-            DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
+        for (byte pageNum = 1; pageNum <= 5; pageNum++) {
             Connection connection = Jsoup.connect(PAGE_LINK.concat("?page=" + pageNum));
             Document document = connection.get();
             Elements rows = document.select(".vacancy-card__inner");
@@ -154,18 +137,24 @@ public class HabrCareerParse {
                 String vacancyName = titleElement.text();
                 Element timeElement = row.select("time").first();
                 String dateTime = timeElement.attr("datetime");
-                LocalDateTime created = dateTimeParser.parse(dateTime);
-                String link = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
-                String description = parser.retrieveDescription(link);
+                String linkDetail = String.format("%s%s", link, linkElement.attr("href"));
+                String description = retrieveDescription(linkDetail);
                 vacancies.add(new Post(
                         vacancyName,
-                        link,
+                        linkDetail,
                         description,
-                        created));
+                        dateTimeParser.parse(dateTime)));
             });
         }
-        for (Post posts : vacancies) {
-            System.out.println(posts);
+        return vacancies;
+    }
+
+    public static void main(String[] args) throws IOException {
+        DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
+        Parse parser = new HabrCareerParse(dateTimeParser);
+        List<Post> posts = parser.list(SOURCE_LINK);
+        for (Post vacancies : posts) {
+            System.out.println(vacancies);
         }
     }
 }
