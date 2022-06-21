@@ -19,5 +19,5 @@ public interface Parse {
      * @param link ссылка на сайт.
      * @return список всех постов.
      */
-    List<Post> list(String link) throws IOException;
+    List<Post> list(String link);
 }

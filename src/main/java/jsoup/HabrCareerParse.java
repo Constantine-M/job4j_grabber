@@ -12,6 +12,8 @@ import java.util.List;
 
 /**
  * 2. Парсинг HTML страницы.
+ * 2.3. Загрузка деталей поста.
+ * 2.4. SqlRuParse.
  *
  * Данный класс описывает принципы работы
  * с библиотекой {@link Jsoup},
@@ -79,10 +81,9 @@ import java.util.List;
  */
 public class HabrCareerParse implements Parse {
 
-    private static final String SOURCE_LINK = "https://career.habr.com";
+    private static final int NUMBER_OF_PAGES = 5;
 
-    private static final String PAGE_LINK = String.format(
-            "%s/vacancies/java_developer", SOURCE_LINK);
+    private static final String SOURCE_LINK = "https://career.habr.com";
 
     private final DateTimeParser dateTimeParser;
 
@@ -99,57 +100,95 @@ public class HabrCareerParse implements Parse {
      * 2.Я выяснил, что основной тест
      * описания содержится в div class="style-ugc".
      * 3.Выбрали первый элемент в дереве.
-     * 4.Далее в цикле проходимся от первого
-     * элемента в дереве (ветке) до последнего
-     * и парсим текст, который находим.
-     * 5.Весь текст объединяем в одну строку
-     * с помощью {@link StringBuilder}.
+     * 4.С помощью метода {@link Element#text()}
+     * извлекли весь текст.
      *
      * @param link ссылка на вакансию.
      * @return описание вакансии в одной строке.
      */
     private String retrieveDescription(String link) {
-        StringBuilder builder = new StringBuilder();
         try {
             Connection connection = Jsoup.connect(link);
             Document document = connection.get();
             Element firstElement = document.select(".style-ugc").first();
-            while (firstElement != null) {
-                builder.append(firstElement.text());
-                firstElement = firstElement.nextElementSibling();
-            }
+            return firstElement.text();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return builder.toString();
+        return null;
     }
 
+    /**
+     * Данный метод извлекает данные
+     * из одной конкретной вакансии и
+     * собирает эти данные в виде
+     * объекта {@link Post}.
+     *
+     * 1.Находим элемент заголовка.
+     * Извлекаем оттуда текст.
+     * 2.Находим элемент с ссылкой.
+     * Извлекаем ссылку с помощью
+     * {@link Element#attr(String)}.
+     * 3.Находим элемент даты и времени.
+     * Извлекаем так же как и ссылку.
+     * 4.Описание вакансии вынесли в
+     * отдельный метод
+     * {@link HabrCareerParse#retrieveDescription}.
+     *
+     * @param row отдельная вакансия
+     *            в списке вакансий.
+     * @return объект класса {@link Post}.
+     */
+    private Post parsePost(Element row) {
+        Element titleElement = row.select(".vacancy-card__title").first();
+        Element linkElement = titleElement.child(0);
+        String vacancyName = titleElement.text();
+        Element timeElement = row.select("time").first();
+        String dateTime = timeElement.attr("datetime");
+        String linkDetail = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
+        String description = retrieveDescription(linkDetail);
+        return new Post(
+                vacancyName,
+                linkDetail,
+                description,
+                dateTimeParser.parse(dateTime));
+    }
+
+    /**
+     * Данный метод парсит все вакансии
+     * в список объектов {@link Post}.
+     *
+     * 1.В цикле проходимся по 5 страницам.
+     * 2.Подключаемся каждый раз к
+     * отдельно взятой странице.
+     * 3.Парсим список элементов на
+     * этой странице с помощью
+     * {@link Document#select(String)}
+     * и получаем список {@link Elements}.
+     *
+     * @param link ссылка на сайт.
+     * @return список объектов {@link Post}
+     * (вакансий).
+     */
     @Override
-    public List<Post> list(String link) throws IOException {
+    public List<Post> list(String link) {
         List<Post> vacancies = new ArrayList<>();
-        for (byte pageNum = 1; pageNum <= 5; pageNum++) {
-            Connection connection = Jsoup.connect(PAGE_LINK.concat("?page=" + pageNum));
-            Document document = connection.get();
-            Elements rows = document.select(".vacancy-card__inner");
-            rows.forEach(row -> {
-                Element titleElement = row.select(".vacancy-card__title").first();
-                Element linkElement = titleElement.child(0);
-                String vacancyName = titleElement.text();
-                Element timeElement = row.select("time").first();
-                String dateTime = timeElement.attr("datetime");
-                String linkDetail = String.format("%s%s", link, linkElement.attr("href"));
-                String description = retrieveDescription(linkDetail);
-                vacancies.add(new Post(
-                        vacancyName,
-                        linkDetail,
-                        description,
-                        dateTimeParser.parse(dateTime)));
-            });
+        try {
+            for (int i = 0; i < NUMBER_OF_PAGES; i++) {
+                Connection connection = Jsoup.connect(
+                        SOURCE_LINK.concat("/vacancies/java_developer?page=" + i));
+                Document document = connection.get();
+                Elements rows = document.select(".vacancy-card__inner");
+                rows.forEach(row -> vacancies.add(parsePost(row)));
+            }
+            return vacancies;
+        } catch (IllegalArgumentException | IOException e) {
+            e.printStackTrace();
         }
-        return vacancies;
+        return null;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
         Parse parser = new HabrCareerParse(dateTimeParser);
         List<Post> posts = parser.list(SOURCE_LINK);

@@ -13,9 +13,6 @@ import java.util.Objects;
  */
 public class Post {
 
-    private static final DateTimeFormatter FORMATTER =
-            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-
     private int id;
 
     /** Название вакансии. */
@@ -110,7 +107,7 @@ public class Post {
                 + ", title='" + title + '\''
                 + ", link='" + link + '\''
                 + ", description='" + description + '\''
-                + ", created=" + FORMATTER.format(created)
+                + ", created=" + created
                 + '}';
     }
 }
