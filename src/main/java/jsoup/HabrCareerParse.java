@@ -161,6 +161,10 @@ public class HabrCareerParse implements Parse {
      * 1.В цикле проходимся по 5 страницам.
      * 2.Подключаемся каждый раз к
      * отдельно взятой странице.
+     * link в параметрах - это почти
+     * полная ссылка, кроме части с номером
+     * страницы. Вот в таком виде:
+     * https://career.habr.com/vacancies/java_developer?page=
      * 3.Парсим список элементов на
      * этой странице с помощью
      * {@link Document#select(String)}
@@ -168,7 +172,8 @@ public class HabrCareerParse implements Parse {
      * 4.Если поймали исключение, то
      * возвращаем пустой список.
      *
-     * @param link ссылка на сайт.
+     * @param link ссылка на страницу с
+     *             вакансиями.
      * @return список объектов {@link Post}
      * (вакансий).
      */
@@ -177,23 +182,23 @@ public class HabrCareerParse implements Parse {
         List<Post> vacancies = new ArrayList<>();
         try {
             for (int i = 0; i < NUMBER_OF_PAGES; i++) {
-                Connection connection = Jsoup.connect(
-                        link.concat("/vacancies/java_developer?page=" + i));
+                Connection connection = Jsoup.connect(link + i);
                 Document document = connection.get();
                 Elements rows = document.select(".vacancy-card__inner");
                 rows.forEach(row -> vacancies.add(parsePost(row)));
             }
             return vacancies;
-        } catch (IllegalArgumentException | IOException e) {
+        } catch (IOException e) {
             LOG.error("Exception write to log", e);
+            throw new IllegalArgumentException();
         }
-        return List.of();
     }
 
     public static void main(String[] args) {
+        String pageLink = "https://career.habr.com/vacancies/java_developer?page=";
         DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
         Parse parser = new HabrCareerParse(dateTimeParser);
-        List<Post> posts = parser.list(SOURCE_LINK);
+        List<Post> posts = parser.list(pageLink);
         for (Post vacancies : posts) {
             System.out.println(vacancies);
         }
