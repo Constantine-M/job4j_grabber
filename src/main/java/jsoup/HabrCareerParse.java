@@ -5,6 +5,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -71,12 +73,6 @@ import java.util.List;
  * как аттрибут. Для этого используем
  * метод {@link Element#attr(String)}.
  *
- * 6.В main мы парсим первые 5 страниц.
- * Чтобы убедиться, что все вакансии
- * не с одной страницы, я вывел в консоль
- * номер страницы. Эта информация
- * будет своеобразным разделителем.
- *
  * @author Constantine on 08.06.2022
  */
 public class HabrCareerParse implements Parse {
@@ -84,6 +80,8 @@ public class HabrCareerParse implements Parse {
     private static final int NUMBER_OF_PAGES = 5;
 
     private static final String SOURCE_LINK = "https://career.habr.com";
+
+    private static final Logger LOG = LoggerFactory.getLogger(HabrCareerParse.class.getName());
 
     private final DateTimeParser dateTimeParser;
 
@@ -102,6 +100,8 @@ public class HabrCareerParse implements Parse {
      * 3.Выбрали первый элемент в дереве.
      * 4.С помощью метода {@link Element#text()}
      * извлекли весь текст.
+     * 5.Если поймали исключение, то
+     * возвращаем пустоту.
      *
      * @param link ссылка на вакансию.
      * @return описание вакансии в одной строке.
@@ -113,9 +113,9 @@ public class HabrCareerParse implements Parse {
             Element firstElement = document.select(".style-ugc").first();
             return firstElement.text();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Exception write to log", e);
         }
-        return null;
+        return "";
     }
 
     /**
@@ -165,6 +165,8 @@ public class HabrCareerParse implements Parse {
      * этой странице с помощью
      * {@link Document#select(String)}
      * и получаем список {@link Elements}.
+     * 4.Если поймали исключение, то
+     * возвращаем пустой список.
      *
      * @param link ссылка на сайт.
      * @return список объектов {@link Post}
@@ -176,16 +178,16 @@ public class HabrCareerParse implements Parse {
         try {
             for (int i = 0; i < NUMBER_OF_PAGES; i++) {
                 Connection connection = Jsoup.connect(
-                        SOURCE_LINK.concat("/vacancies/java_developer?page=" + i));
+                        link.concat("/vacancies/java_developer?page=" + i));
                 Document document = connection.get();
                 Elements rows = document.select(".vacancy-card__inner");
                 rows.forEach(row -> vacancies.add(parsePost(row)));
             }
             return vacancies;
         } catch (IllegalArgumentException | IOException e) {
-            e.printStackTrace();
+            LOG.error("Exception write to log", e);
         }
-        return null;
+        return List.of();
     }
 
     public static void main(String[] args) {
