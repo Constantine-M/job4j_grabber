@@ -43,8 +43,9 @@ import java.util.List;
  * (относительно домена. Это наша
  * константа {@see SOURCE_LINK}).
  * Все это ты увидишь, если откроешь
- * <a href="https://career.habr.com/vacancies">Habr</a>
- * и в пустом месте ПКМ -> исследовать элемент.
+ * <a href="https:/ /career.habr.com/vacancies">Habr</a>
+ * (пробел убери) и в пустом месте ПКМ
+ * -> исследовать элемент.
  * Это работает точно для Ябраузера.
  *
  * 4.На основе анализа прописываем парсинг.
@@ -164,7 +165,7 @@ public class HabrCareerParse implements Parse {
      * link в параметрах - это почти
      * полная ссылка, кроме части с номером
      * страницы. Вот в таком виде:
-     * https://career.habr.com/vacancies/java_developer?page=
+     * https:/career.habr.com/vacancies/java_developer?page=
      * 3.Парсим список элементов на
      * этой странице с помощью
      * {@link Document#select(String)}
