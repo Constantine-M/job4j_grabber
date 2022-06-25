@@ -1,0 +1,10 @@
+CREATE SCHEMA IF NOT EXISTS project;
+
+CREATE TABLE project.post
+(
+id serial PRIMARY KEY,
+name varchar(255),
+textpost text,
+link text UNIQUE,
+created timestamp
+);
