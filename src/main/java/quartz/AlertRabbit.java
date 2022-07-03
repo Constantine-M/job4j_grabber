@@ -50,6 +50,11 @@ import static org.quartz.TriggerBuilder.newTrigger;
  * {@link Scheduler#scheduleJob} мы загружаем
  * задачу и триггер с планировщик.
  *
+ * 6.Команда {@link Thread#sleep(long)}
+ * обозначает, какое время будет
+ * работать программа. В нашем случае
+ * программа будет работать 10 сек.
+ *
  * @author Constantine on 04.06.2022
  */
 public class AlertRabbit {

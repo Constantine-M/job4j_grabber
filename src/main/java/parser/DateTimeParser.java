@@ -1,4 +1,4 @@
-package jsoup;
+package parser;
 
 import java.time.LocalDateTime;
 

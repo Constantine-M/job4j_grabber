@@ -1,7 +1,5 @@
-package jsoup;
+package parser;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +73,7 @@ public class PsqlStore implements Store, AutoCloseable {
     public void save(Post post) {
         String ls = System.lineSeparator();
         String sql = "INSERT INTO project.post (name, textpost, link, created)" + ls
-        + "VALUES (?, ?, ?, ?) ON CONFLICT (link) DO NOTHING";
+                    + "VALUES (?, ?, ?, ?) ON CONFLICT (link) DO NOTHING";
         try (PreparedStatement ps = cnn.prepareStatement(sql,
                 Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, post.getTitle());
@@ -185,31 +183,6 @@ public class PsqlStore implements Store, AutoCloseable {
     public void close() throws Exception {
         if (cnn != null) {
             cnn.close();
-        }
-    }
-
-    public static void main(String[] args) {
-        String pageLink = "https://career.habr.com/vacancies/java_developer?page=";
-        DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
-        Parse parser = new HabrCareerParse(dateTimeParser);
-        List<Post> posts = parser.list(pageLink);
-        Properties cfg = new Properties();
-        try (InputStream in = PsqlStore.class.getClassLoader()
-                .getResourceAsStream("app.properties")) {
-            cfg.load(in);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try (PsqlStore store = new PsqlStore(cfg)) {
-            System.out.println("===== SAVING VACANCIES...");
-            posts.forEach(store::save);
-            System.out.println("===== AND NOW, GET ALL VACANCIES");
-            List<Post>  vacancies = store.getAll();
-            vacancies.forEach(System.out::println);
-            System.out.println("===== AND THEN FIND BY ID = 165");
-            System.out.println(store.findById(165));
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

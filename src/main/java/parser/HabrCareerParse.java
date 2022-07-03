@@ -1,4 +1,4 @@
-package jsoup;
+package parser;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -43,8 +43,8 @@ import java.util.List;
  * (относительно домена. Это наша
  * константа {@see SOURCE_LINK}).
  * Все это ты увидишь, если откроешь
- * <a href="https:/ /career.habr.com/vacancies">Habr</a>
- * (пробел убери) и в пустом месте ПКМ
+ * <a href="https://career.habr.com/vacancies">Habr</a>
+ * и в пустом месте ПКМ
  * -> исследовать элемент.
  * Это работает точно для Ябраузера.
  *
@@ -192,16 +192,6 @@ public class HabrCareerParse implements Parse {
         } catch (IOException e) {
             LOG.error("Exception write to log", e);
             throw new IllegalArgumentException();
-        }
-    }
-
-    public static void main(String[] args) {
-        String pageLink = "https://career.habr.com/vacancies/java_developer?page=";
-        DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
-        Parse parser = new HabrCareerParse(dateTimeParser);
-        List<Post> posts = parser.list(pageLink);
-        for (Post vacancies : posts) {
-            System.out.println(vacancies);
         }
     }
 }

@@ -1,6 +1,7 @@
-package jsoup;
+package parser;
 
 import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 
 /**
  * Данный интерфейс описывает планировщика.
@@ -20,5 +21,5 @@ public interface Grab {
      * @param scheduler планировщик
      *                  (мы будет использовать quartz).
      */
-    void init(Parse parse, Store store, Scheduler scheduler);
+    void init(Parse parse, Store store, Scheduler scheduler) throws SchedulerException;
 }
