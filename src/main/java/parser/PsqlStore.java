@@ -72,13 +72,13 @@ public class PsqlStore implements Store, AutoCloseable {
     @Override
     public void save(Post post) {
         String ls = System.lineSeparator();
-        String sql = "INSERT INTO project.post (name, textpost, link, created)" + ls
+        String sql = "INSERT INTO project.post (name, link, textpost, created)" + ls
                     + "VALUES (?, ?, ?, ?) ON CONFLICT (link) DO NOTHING";
         try (PreparedStatement ps = cnn.prepareStatement(sql,
                 Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, post.getTitle());
-            ps.setString(2, post.getDescription());
-            ps.setString(3, post.getLink());
+            ps.setString(2, post.getLink());
+            ps.setString(3, post.getDescription());
             ps.setTimestamp(4, Timestamp.valueOf(post.getCreated()));
             ps.execute();
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {

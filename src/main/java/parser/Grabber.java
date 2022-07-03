@@ -5,6 +5,10 @@ import org.quartz.impl.StdSchedulerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Properties;
 
@@ -51,6 +55,92 @@ public class Grabber implements Grab {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Данный метод выводит результат
+     * парсера на веб-страницу.
+     *
+     * 1.Сначала создаем собственный поток,
+     * используя класс {@link Thread}.
+     * Когда запускается любое приложение,
+     * то начинает выполняться поток,
+     * называемый главным потоком (main).
+     * Несмотря на то, что главный поток
+     * создаётся автоматически, им можно
+     * управлять через объект класса {@link Thread}.
+     *
+     * 2.Затем создаем сервер.
+     * Вызов конструктора {@link ServerSocket}
+     * создает серверный сокет, привязанный к
+     * указанному порту. Чтобы клиент мог
+     * узнать, где находится сервер ему
+     * нужен адрес и порт, 9000 - это порт.
+     * По умолчанию адрес будет = localhost.
+     *
+     * 3.Условие в цикле говорит о том,
+     * что сервер работает, пока его
+     * принудительно не закроют.
+     *
+     * 4.Далее создаем клиентский сокет.
+     * Вызов метода accept() заставляет
+     * программу ждать подключений по
+     * указанному порту, работа программы
+     * продолжится только после подключения
+     * клиента. После успешного подключения
+     * метод возвращает объект Socket,
+     * который используется для
+     * взаимодействия с клиентом.
+     *
+     * Метод {@link ServerSocket#accept()}
+     * принимает один запрос от клиента.
+     * Чтобы отправить второй, программа
+     * должна снова получить объект {@link Socket}.
+     *
+     * 5.Во втором блоке try с помощью
+     * объекта {@link Socket} программа
+     * может получить входной поток и может
+     * отправить данные в выходной поток.
+     *
+     * 6.В ответ мы записываем строчку,
+     * где указали, что все прочитали:
+     * HTTP/1.1 200 OK\r\n\r\n
+     *
+     * 7.В программе читается весь
+     * входной поток через цикл for.
+     *
+     * 8.В конце запускаем поток
+     * командой {@link Thread#start()}.
+     *
+     * 9.Теперь запускаем программу
+     * и переходим по ссылке
+     * <a href="http://localhost:9000">LOCALHOST</a>
+     */
+    public void web() {
+        new Thread(() -> {
+            try (ServerSocket server = new ServerSocket(
+                    Integer.parseInt(cfg.getProperty("port"))
+            )) {
+                while (!server.isClosed()) {
+                    Socket socket = server.accept();
+                    try (OutputStream out = socket.getOutputStream()) {
+                        out.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
+                        for (Post post : store().getAll()) {
+                            int postId = post.getId();
+                            out.write("VACANCY NUMBER - ".concat(
+                                    String.valueOf(postId)).getBytes());
+                            out.write(System.lineSeparator().getBytes());
+                            out.write(post.toString().getBytes(Charset.forName("Windows-1251")));
+                            out.write(System.lineSeparator().getBytes());
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     /**
@@ -201,5 +291,6 @@ public class Grabber implements Grab {
         Scheduler scheduler = grab.scheduler();
         Store store = grab.store();
         grab.init(new HabrCareerParse(new HabrCareerDateTimeParser()), store, scheduler);
+        grab.web();
     }
 }
