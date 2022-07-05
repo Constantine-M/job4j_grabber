@@ -2,6 +2,8 @@ package parser;
 
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +31,8 @@ import static org.quartz.TriggerBuilder.newTrigger;
  */
 public class Grabber implements Grab {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Grabber.class.getName());
+
     private final Properties cfg = new Properties();
 
     public Store store() {
@@ -53,7 +57,7 @@ public class Grabber implements Grab {
                 .getResourceAsStream("app.properties")) {
             cfg.load(in);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Exception write to log", e);
         }
     }
 
@@ -134,11 +138,11 @@ public class Grabber implements Grab {
                             out.write(System.lineSeparator().getBytes());
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        LOG.error("Exception write to log", e);
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.error("Exception write to log", e);
             }
         }).start();
     }
@@ -215,7 +219,7 @@ public class Grabber implements Grab {
     public static class GrabJob implements Job {
 
         public GrabJob() {
-            System.out.println("Calling constructor...");
+            LOG.info("CALLING CONSTRUCTOR...");
         }
 
         /**
@@ -266,22 +270,20 @@ public class Grabber implements Grab {
          */
         @Override
         public void execute(JobExecutionContext context) throws JobExecutionException {
-            System.out.println("GRABBER RUNS HERE...");
+            LOG.info("GRABBER RUNS HERE...");
             JobDataMap map = context.getJobDetail().getJobDataMap();
             Store store = (Store) map.get("store");
             Parse parse = (Parse) map.get("parse");
             Properties cfg = (Properties) map.get("cfg");
+            LOG.info("STARTING PARSING...");
             List<Post> posts = parse.list(cfg.getProperty("habrPage"));
-            System.out.println("SAVING VACANCIES...");
+            LOG.info("SAVING VACANCIES...");
             posts.forEach(store::save);
-            System.out.println("AND NOW, GET ALL VACANCIES");
+            LOG.info("AND NOW, GET ALL VACANCIES");
             List<Post>  vacancies = store.getAll();
-            vacancies.forEach(System.out::println);
-            System.out.println("AND THEN FIND BY ID = 165");
-            System.out.println(store.findById(165));
-            System.out.println(System.lineSeparator());
-            System.out.println("PARSING WILL START AGAIN...IN "
-                    + cfg.getProperty("time") + " sec");
+            vacancies.forEach(post -> LOG.info(post.toString()));
+            LOG.info("PARSING WILL START AGAIN...IN "
+                    + cfg.getProperty("time") + " SEC");
         }
     }
 

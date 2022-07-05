@@ -1,5 +1,8 @@
 package parser;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +15,8 @@ import java.util.Properties;
  * @author Constantine on 25.06.2022
  */
 public class PsqlStore implements Store, AutoCloseable {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PsqlStore.class.getName());
 
     private Properties cfg;
 
@@ -44,7 +49,7 @@ public class PsqlStore implements Store, AutoCloseable {
                     cfg.getProperty("login"),
                     cfg.getProperty("password"));
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Exception write to log", e);
         }
     }
 
@@ -87,7 +92,7 @@ public class PsqlStore implements Store, AutoCloseable {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Exception write to log", e);
         }
     }
 
@@ -111,7 +116,7 @@ public class PsqlStore implements Store, AutoCloseable {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Exception write to log", e);
         }
         return posts;
     }
@@ -132,7 +137,7 @@ public class PsqlStore implements Store, AutoCloseable {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Exception write to log", e);
         }
         return null;
     }
@@ -175,7 +180,7 @@ public class PsqlStore implements Store, AutoCloseable {
         try (Statement statement = cnn.createStatement()) {
             statement.executeUpdate(sql);
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.error("Exception write to log", e);
         }
     }
 
