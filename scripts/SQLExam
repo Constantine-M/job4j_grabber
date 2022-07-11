@@ -1,0 +1,69 @@
+CREATE TABLE sqlexam.company(
+    id int NOT NULL,
+    name varchar(255),
+	CONSTRAINT company_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE sqlexam.person(
+    id int NOT NULL,
+    name varchar(255),
+	company_id int references sqlexam.company (id),
+	CONSTRAINT person_pkey PRIMARY KEY (id)
+);
+
+INSERT INTO sqlexam.company (id, name)
+VALUES
+(1, 'Team A'),
+(2, 'Hogwarts School'),
+(3, 'Linked In'),
+(4, 'Ural factory'),
+(5, 'Zerg');
+
+INSERT INTO sqlexam.person (id, name, company_id)
+VALUES
+(1, 'John "Hannibal" Smith', 1),
+(3, 'Templeton "Face(man)" Peck', 1),
+(5, 'H.M. "Howling Mad" Murdock', 1),
+(7, 'Bosco Albert "B.A." Baracus', 1),
+(9, 'Tia', 1),
+(2, 'Dobby', 2),
+(4, 'Gellert Grindelwald', 2),
+(6, 'Alastor "Mad-Eye" Moody', 2),
+(8, 'Newt Scamander', 2),
+(10, 'Luna Lovegood', 2),
+(11, 'Ryan Roslansky', 3),
+(22, 'Jeffrey Weiner', 3),
+(33, 'Reid Hoffman', 3),
+(44, 'Eddie', 4),
+(55, 'Arturchik', 4),
+(66, '"Kompot"', 4),
+(12, 'Sarah Kerrigan', 5),
+(14, 'Alexei Stukov', 5),
+(16, 'Zagara', 5),
+(18, 'Dehaka', 5);
+
+SELECT * FROM sqlexam.person p as Человеки
+LEFT JOIN sqlexam.company c as Компашка
+ON p.company_id = c.id;
+
+SELECT 
+p.name as Чел,
+p.company_id,
+c.name as Компания
+FROM sqlexam.person as p
+LEFT JOIN sqlexam.company as c
+ON p.company_id = c.id
+WHERE p.company_id != 5
+ORDER BY p.company_id;
+
+SELECT c.name as Компания, count(*) as Количество_важных_персон
+FROM sqlexam.person as p
+JOIN sqlexam.company as c
+ON p.company_id = c.id
+GROUP BY c.name
+HAVING count(*) = 
+	(SELECT MAX(max_count)
+	 FROM(
+		 SELECT COUNT(*) max_count
+		 FROM sqlexam.company
+	 	 GROUP BY c.name) a);
