@@ -60,10 +60,10 @@ SELECT c.name as Компания, count(*) as Количество_важных
 FROM sqlexam.person as p
 JOIN sqlexam.company as c
 ON p.company_id = c.id
-GROUP BY c.name
+GROUP BY c.id
 HAVING count(*) = 
-	(SELECT MAX(max_count)
-	 FROM(
-		 SELECT COUNT(*) max_count
-		 FROM sqlexam.company
-	 	 GROUP BY c.name) a);
+	(SELECT COUNT(*) max_cnt
+	FROM sqlexam.person p
+	GROUP BY p.company_id
+	ORDER BY max_cnt DESC
+	LIMIT 1);
