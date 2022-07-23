@@ -13,7 +13,7 @@ public class Test {
     public static int testFileLog1(int a, int b) {
         int result = 0;
         try {
-            result = a/b;
+            result = a / b;
         } catch (Exception e) {
             LOG.error("Exception write to file", e);
         }
@@ -30,11 +30,29 @@ public class Test {
         return rsl;
     }
 
+    public static void testFileLog3() {
+        try {
+            throw new Exception("There is no code here");
+        } catch (Exception e) {
+            LOG.error("Exception write to file", e);
+        }
+    }
+
+    public static void testFileLog4() {
+        LOG.error("Some error..");
+    }
+
     public static void main(String[] args) {
         int a = 5;
         int b = 0;
         char[] c = new char[] {1, 3, 5};
         System.out.println(testFileLog1(a, b));
         System.out.println(testFileLog2(c));
+        testFileLog3();
+        testFileLog4();
+        LOG.info("Info message..");
+        LOG.warn("Warn message..");
+        LOG.debug("Debug message..");
+        LOG.error("Error message..");
     }
 }
