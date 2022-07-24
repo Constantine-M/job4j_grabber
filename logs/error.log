@@ -1,0 +1,10 @@
+2022-07-23 14:00:06 ERROR LoggingTest:17 - Exception write to file
+java.lang.Exception: There is no code here
+	at parser.LoggingTest.testFileLog(LoggingTest.java:15)
+	at parser.LoggingTest.main(LoggingTest.java:22)
+2022-07-23 14:00:06 ERROR LoggingTest:26 - Error message..
+2022-07-24 11:30:03 ERROR LoggingTest:17 - Exception write to file
+java.lang.Exception: There is no code here
+	at parser.LoggingTest.testFileLog(LoggingTest.java:15)
+	at parser.LoggingTest.main(LoggingTest.java:22)
+2022-07-24 11:30:03 ERROR LoggingTest:26 - Error message..
